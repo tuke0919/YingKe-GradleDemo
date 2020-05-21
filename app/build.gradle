@@ -1,0 +1,134 @@
+apply plugin: 'com.android.application'
+apply plugin: 'YingKePlugin'
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        applicationId "com.yingke.gradle"
+        minSdkVersion 21
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'androidx.test:runner:1.1.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
+}
+
+
+task Hello{
+    println "Hello Gradle! = $buildDir"
+}
+
+println "APP子项目配置开始---"
+
+afterEvaluate {
+    println "APP子项目afterEvaluate回调..."
+}
+
+task appTest {
+    println "APP子项目里任务配置---"
+    doLast {
+        println "执行子项目任务..."
+    }
+}
+
+println "APP子项目配置结束---"
+
+
+// getter/setter属性
+// build文件路径
+File bd = buildDir
+println("buildDir = " + bd.getAbsolutePath())
+// 项目路径
+File root = rootDir
+println("rootDir = " + root.getAbsolutePath())
+
+// 获取Project的名字
+String projectName = getName()
+println("projectName = $projectName")
+
+// 设置Project的描述信息
+setDescription "这是一个测试案例"
+println("Description = ${getDescription()}")
+
+// 获取Project的路径
+println("projectPath = ${getPath()}")
+
+class VersionInfo{
+    String version;
+    boolean release;
+
+    VersionInfo(String version, boolean release) {
+        this.version = version
+        this.release = release
+    }
+
+    @Override
+    String toString() {
+        return "V-${version}-${release ? 'release' : 'debug'}"
+    }
+}
+
+// 设置Project的版本号，参数可以是任何对象，gradle内部会使用 toString() 方法返回的值
+setVersion(new VersionInfo("1.0.0", true))
+println("projectVersion = ${getVersion()}")
+
+// 文件操作
+mkdir("${buildDir}/test")
+mkdir("${buildDir}/test1")
+
+File testDir = file("${buildDir}/test")
+println "文件定位是否成功：${testDir.exists()}"
+
+FileCollection fileCollection = files("${buildDir}/test", "${buildDir}/test1")
+println "-------对文件集合进行迭代--------"
+fileCollection.each { f ->
+    println f.name + " path = " + f.getAbsolutePath()
+}
+println "-------文件迭代结束-------"
+Set<File> fileSet = fileCollection.files
+println "文件集合里共有${fileSet.size()}个文件"
+
+file("${buildDir}/t1.txt").createNewFile()
+file("${buildDir}/test/t2.txt").createNewFile()
+file("${buildDir}/t1.java").createNewFile()
+
+println "通过基准目录来创建文件树"
+ConfigurableFileTree fileTree1 = fileTree("build")
+//添加包含规则
+fileTree1.include "*.txt", "*/*.txt"
+//添加排除规则
+fileTree1.exclude "*.java"
+fileTree1.each { f ->
+    println f
+}
+//2.通过闭包来创建文件树
+println "通过闭包来创建文件树"
+ConfigurableFileTree fileTree2 = fileTree("build") {
+    include "*/*.txt", "*.java"
+    exclude "*.txt"
+}
+fileTree2.each { f ->
+    println f
+}
+
+//3.通过map配置来创建文件树，可配置的选项有：dir: ''、include: '[]、exclude: []、includes: []、excludes: []
+println "通过Map来创建文件树"
+def fileTree3 = fileTree(dir: "build", includes: ["*/*.txt", "*.java"])
+fileTree3 = fileTree(dir: "build", exclude: "*.java")
+fileTree3.each { f ->
+    println f
+}
+

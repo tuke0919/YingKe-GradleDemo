@@ -1,0 +1,31 @@
+// 加入groovy的能力
+apply plugin: 'groovy'
+// 导入maven插件
+apply plugin:'maven'
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    // 下面两个库必须导入
+    // gradle sdk
+    implementation gradleApi()
+    // groovy sdk
+    implementation localGroovy()
+}
+
+repositories {
+    jcenter()
+}
+
+group = "com.yingke.plugin"
+version = '1.0.0'
+
+uploadArchives{
+    repositories {
+        mavenDeployer{
+            repository(url: uri('../repos'))
+        }
+    }
+}
+
+
