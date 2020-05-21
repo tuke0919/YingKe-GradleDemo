@@ -132,3 +132,101 @@ fileTree3.each { f ->
     println f
 }
 
+
+// 练习extension
+
+class Foo {
+
+    int age;
+    String username;
+
+    String toString() {
+        return "name = ${username}, age = ${age}"
+    }
+}
+
+getExtensions().create("foo", Foo)
+
+foo {
+    age = 30
+    username = "hjy"
+}
+
+task testExt {
+    // 能直接通过 project 获取到自定义的 Extension
+    println project.foo
+}
+
+// 嵌套extension
+class OuterExt{
+
+    String outerName;
+    String msg;
+    InnerExt innerExt = new InnerExt()
+
+    void outerName(String name) {
+        outerName = name
+    }
+
+    void msg(String msg){
+        this.msg = msg
+    }
+
+    // 创建内部Extension，名称为方法名 inner
+    void inner(Action<InnerExt> action){
+        action.execute(inner)
+    }
+
+    // 创建内部Extension，名称为方法名 inner
+    void inner(Closure closure){
+        org.gradle.util.ConfigureUtil.configure(closure, innerExt)
+    }
+
+    String toString() {
+        return "OuterExt[ name = ${outerName}, msg = ${msg}] " + innerExt
+    }
+}
+
+class InnerExt {
+
+    String innerName
+    String msg
+
+    void innerName(String name) {
+        innerName = name
+    }
+
+    void msg(String msg) {
+        this.msg = msg
+    }
+
+    String toString() {
+        return "InnerExt[ name = ${innerName}, msg = ${msg}]"
+    }
+
+}
+
+def outExt = getExtensions().create("outer", OuterExt)
+outer {
+    outerName "outer"
+    msg "this is a outer message."
+
+    inner {
+        innerName "inner"
+        msg "this is a inner message"
+    }
+}
+
+task testNestedExt {
+    println outExt
+}
+
+
+
+
+
+
+
+
+
+
