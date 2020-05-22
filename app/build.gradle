@@ -221,6 +221,68 @@ task testNestedExt {
     println outExt
 }
 
+// 领域对象容器
+class TestDomainObj{
+    String name
+    String msg
+
+    TestDomainObj(String name) {
+        this.name = name
+    }
+
+    void msg(String msg){
+        this.msg = msg
+    }
+
+    String toString() {
+        return "name = ${name}, msg = ${msg}"
+    }
+}
+
+class TestExtension{
+
+    NamedDomainObjectContainer<TestDomainObj> testDomains
+
+    public TestExtension(Project project){
+        testDomains = project.container(TestDomainObj)
+    }
+
+    void testDomain(Action<NamedDomainObjectContainer<TestDomainObj>> action){
+        action.execute(testDomains)
+    }
+
+    void test(){
+        testDomains.all{ data ->
+            println data
+        }
+    }
+}
+
+def testExt = getExtensions().create("test", TestExtension, project)
+
+test{
+    testDomain {
+        domain2 {
+            msg "This is domain2"
+        }
+
+        domain1 {
+            msg "This is domain1"
+        }
+
+        domain3 {
+            msg "This is domain3"
+        }
+    }
+}
+
+task myTask {
+    println testExt.test()
+}
+
+
+
+
 
 
 
